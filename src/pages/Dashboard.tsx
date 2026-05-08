@@ -1,40 +1,38 @@
 import { useNavigate } from "react-router-dom";
+import { Button } from "@mui/material";
+import toast from "react-hot-toast";
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // remove user session
     localStorage.removeItem("user");
 
-    // redirect to login
+    toast.success("Logged out successfully!");
+
     navigate("/login");
   };
 
+  const goToPets = () => {
+    toast("Opening Pets page...", {
+      icon: "🐾",
+    });
+
+    navigate("/pets");
+  };
+
   return (
-    <div className="p-10 space-y-6">
-      <h1 className="text-3xl font-bold text-green-600">
-        Dashboard
-      </h1>
+    <div className="p-10">
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
 
-      <p className="text-gray-700">
-        Welcome to the PetCare System 🐾
-      </p>
-
-      <div className="space-x-4">
-        <button
-          onClick={() => navigate("/pets")}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
+      <div className="flex gap-4">
+        <Button variant="contained" onClick={goToPets}>
           View Pets
-        </button>
+        </Button>
 
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded"
-        >
+        <Button variant="outlined" color="error" onClick={handleLogout}>
           Logout
-        </button>
+        </Button>
       </div>
     </div>
   );

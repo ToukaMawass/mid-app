@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
+import { Card, CardContent, Typography, Button, Modal, Box } from "@mui/material";
+import { useFetch } from "../hooks/useFetch";
 
 type Pet = {
   id: number;
@@ -8,28 +10,18 @@ type Pet = {
 };
 
 export default function Pets() {
-  const [pets, setPets] = useState<Pet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: pets, loading, error } = useFetch<Pet>(
+    "https://jsonplaceholder.typicode.com/users"
+  );
+
   const [search, setSearch] = useState("");
+  const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
+  const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/users")
-      .then((res) => res.json())
-      .then((data: Pet[]) => {
-        setPets(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  }, []);
-
-  // filter pets based on search input
   const filteredPets = pets.filter((pet) =>
     pet.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // loading UI
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -38,29 +30,62 @@ export default function Pets() {
     );
   }
 
+  if (error) {
+    return <p className="p-10 text-red-500">Error: {error}</p>;
+  }
+
   return (
     <div className="p-10">
       <h1 className="text-2xl font-bold mb-4">Pets Page</h1>
 
-      {/* search input */}
       <input
         type="text"
         placeholder="Search pets..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="border p-2 mb-4 w-full rounded"
+        className="border p-2 mb-4 w-full rounded text-black dark:text-white dark:bg-gray-800"
       />
 
-      {/* pets list */}
-      {filteredPets.map((pet) => (
-        <div
-          key={pet.id}
-          className="border p-3 mb-2 rounded shadow"
-        >
-          <h2 className="font-bold">{pet.name}</h2>
-          <p>{pet.email}</p>
-        </div>
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filteredPets.map((pet) => (
+          <Card key={pet.id}>
+            <CardContent>
+              <Typography variant="h6">{pet.name}</Typography>
+              <Typography color="text.secondary">{pet.email}</Typography>
+
+              <Button
+                variant="contained"
+                className="mt-2"
+                onClick={() => {
+                  setSelectedPet(pet);
+                  setOpen(true);
+                }}
+              >
+                View Details
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* MODAL */}
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <Box className="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-80 mx-auto mt-40 text-black dark:text-white">
+          {selectedPet && (
+            <>
+              <h2 className="text-xl font-bold">{selectedPet.name}</h2>
+              <p>{selectedPet.email}</p>
+
+              <button
+                onClick={() => setOpen(false)}
+                className="mt-4 bg-blue-500 text-white px-3 py-1 rounded"
+              >
+                Close
+              </button>
+            </>
+          )}
+        </Box>
+      </Modal>
     </div>
   );
 }
